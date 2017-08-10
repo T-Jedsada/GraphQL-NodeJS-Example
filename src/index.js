@@ -1,6 +1,8 @@
 const Hapi = require("hapi")
 const GraphQL = require("hapi-graphql")
 const graphql = require('graphql');
+const fetchSchema = require('fetch-graphql-schema');
+const fs = require('fs');
 
 const GraphQLSchema = graphql.GraphQLSchema;
 const GraphQLObjectType = graphql.GraphQLObjectType;
@@ -34,6 +36,13 @@ server.register({
             config: {}
         }
     }
-}, () => server.start(() =>
-    console.log('Server running at:', server.info.uri)
-));
+}, () => {
+    server.start(() => console.log('Server running at:', server.info.uri))
+    fetchSchema('http://localhost:3000/graphql')
+        .then(schemaJSON => {
+            fs.writeFile('schema.json', schemaJSON, function (err) {
+                if (err) return console.log(err);
+                console.log('write file schema.json successfully...');
+            });
+        });
+});
